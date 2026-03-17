@@ -7,5 +7,5 @@ export class SignupDTO {
 
   @IsNotEmpty()
   @IsString()
-  hash: string;
+  password: string;
 }
