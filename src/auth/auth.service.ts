@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import * as argon from 'argon2';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SignupDTO } from './dto';
+import { Tokens } from './types';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 
 @Injectable()
 export class AuthService {
@@ -15,7 +17,14 @@ export class AuthService {
           password_hash: password,
         },
       });
-    } catch (error) {}
+    } catch (error) {
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictException('Credentials taken');
+      }
+    }
   }
   public async signinLocal() {}
   public async logout() {}
