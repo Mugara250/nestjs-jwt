@@ -10,10 +10,10 @@ export class AuthService {
   public async signupLocal({ email, password }: SignupDTO) {
     try {
       const passwordHash = await argon.hash(password);
-      const user = this.prisma.user.create({
+      const user = await this.prisma.user.create({
         data: {
           email: email,
-          password_hash: password,
+          password_hash: passwordHash,
         },
       });
     } catch (error) {
@@ -23,6 +23,7 @@ export class AuthService {
       ) {
         throw new ConflictException('Credentials taken');
       }
+      throw error;
     }
   }
   public async signinLocal() {}
