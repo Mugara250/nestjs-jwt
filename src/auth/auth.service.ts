@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as argon from 'argon2';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { SignupDTO } from './dto/signup.dto';
-import { SigninDTO } from './dto/signin.dto';
+import { SignupDTO } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -18,7 +17,7 @@ export class AuthService {
       });
     } catch (error) {}
   }
-  public async signinLocal(signinDTO: SigninDTO) {}
+  public async signinLocal() {}
   public async logout() {}
   public async refreshTokens() {}
 }
