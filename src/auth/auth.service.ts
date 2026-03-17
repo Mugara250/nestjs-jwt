@@ -2,7 +2,6 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import * as argon from 'argon2';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SignupDTO } from './dto';
-import { Tokens } from './types';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 
 @Injectable()
