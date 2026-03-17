@@ -8,8 +8,8 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('local/signup')
-  public signupLocal(@Body() signupDTO: SignupDTO) {
-    return this.authService.signupLocal();
+  public async signupLocal(@Body() signupDTO: SignupDTO) {
+    return await this.authService.signupLocal(signupDTO);
   }
 
   @Post('local/signin')
