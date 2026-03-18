@@ -7,5 +7,5 @@ export class SigninDTO {
 
   @IsNotEmpty()
   @IsString()
-  hash: string;
+  password: string;
 }

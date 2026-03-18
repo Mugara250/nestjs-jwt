@@ -1,12 +1,23 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import * as argon from 'argon2';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { SignupDTO } from './dto';
+import { SigninDTO, SignupDTO } from './dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
+import { JwtService } from '@nestjs/jwt';
+import { Payload } from './types';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+  ) {}
   public async signupLocal({ email, password }: SignupDTO) {
     try {
       const passwordHash = await argon.hash(password);
@@ -26,7 +37,64 @@ export class AuthService {
       throw error;
     }
   }
-  public async signinLocal() {}
+
+  public async signinLocal({ email, password }: SigninDTO) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: email,
+      },
+    });
+    if (!user) {
+      console.log(user);
+      throw new ForbiddenException('Authentication failed!');
+    }
+    const hashCheck = await argon.verify(user.password_hash, password);
+    if (!hashCheck) {
+      console.log(hashCheck);
+      throw new ForbiddenException('Authentication failed!');
+    }
+    const payload: Payload = {
+      sub: user.id,
+      email: user.email,
+    };
+    return await this.getTokens(payload);
+  }
+
+  async getTokens(
+    payload: Payload,
+  ): Promise<{ id: number; access_token: string; refresh_token: string }> {
+    const getAccessToken = async () =>
+      await this.jwtService.signAsync(payload, {
+        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: '15m',
+      });
+    const getRefreshToken = async () =>
+      await this.jwtService.signAsync(payload, {
+        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: '15m',
+      });
+    const [access_token, refresh_token] = await Promise.all([
+      getAccessToken(),
+      getRefreshToken(),
+    ]);
+
+    if (refresh_token) {
+      const refreshTokenHash = await argon.hash(refresh_token);
+      this.prisma.user.update({
+        where: {
+          id: payload.sub,
+        },
+        data: {
+          refresh_token_hash: refreshTokenHash,
+        },
+      });
+    }
+    return {
+      id: payload.sub,
+      access_token,
+      refresh_token,
+    };
+  }
   public async logout() {}
   public async refreshTokens() {}
 }

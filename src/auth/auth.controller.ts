@@ -14,7 +14,7 @@ export class AuthController {
 
   @Post('local/signin')
   public signinLocal(@Body() signinDTO: SigninDTO) {
-    return this.authService.signinLocal();
+    return this.authService.signinLocal(signinDTO);
   }
 
   @Post('refresh')
