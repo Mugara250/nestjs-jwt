@@ -12,6 +12,7 @@ import { SigninDTO } from './dto/signin.dto';
 import { SignupDTO } from './dto/signup.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from 'generated/prisma/browser';
+import { AccessTokenGuard, RefreshTokenGuard } from './common/guards';
 
 @Controller('auth')
 export class AuthController {
@@ -27,7 +28,7 @@ export class AuthController {
     return await this.authService.signinLocal(signinDTO);
   }
 
-  @UseGuards(AuthGuard('jwt-refresh'))
+  @UseGuards(RefreshTokenGuard)
   @Post('refresh')
   public async refreshToken(@Req() request) {
     const user = request.user;
@@ -37,7 +38,7 @@ export class AuthController {
     );
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AccessTokenGuard)
   @HttpCode(HttpStatus.OK)
   @Post('logout')
   public async logout(@Req() request): Promise<void> {
