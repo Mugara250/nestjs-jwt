@@ -61,7 +61,7 @@ export class AuthService {
   }
 
   public async logout(userId: number) {
-    await this.prisma.user.updateMany({
+    await this.prisma.user.update({
       where: {
         id: userId,
         refresh_token_hash: {
@@ -74,7 +74,28 @@ export class AuthService {
     });
   }
 
-  public async refreshTokens() {}
+  public async refreshTokens(userId: number, refreshToken: string) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    if (!user) throw new ForbiddenException('Access denied');
+
+    if (user.refresh_token_hash) {
+      console.log(user.refresh_token_hash, refreshToken);
+      const refreshTokensMatch = await argon.verify(
+        user.refresh_token_hash,
+        refreshToken,
+      );
+      if (!refreshTokensMatch) throw new ForbiddenException('Access denied');
+      const tokens = await this.getTokens({ sub: userId, email: user.email });
+      console.log(tokens);
+      return tokens;
+    }
+    throw new ForbiddenException('Access denied');
+  }
+
   async getTokens(
     payload: Payload,
   ): Promise<{ id: number; access_token: string; refresh_token: string }> {
@@ -95,7 +116,7 @@ export class AuthService {
 
     if (refresh_token) {
       const refreshTokenHash = await argon.hash(refresh_token);
-      this.prisma.user.update({
+      await this.prisma.user.update({
         where: {
           id: payload.sub,
         },

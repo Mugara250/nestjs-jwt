@@ -23,13 +23,13 @@ export class RefreshTokenStrategy extends PassportStrategy(
   }
 
   public async validate(request: Request, payload: Payload) {
-    const refresh_token = request
+    const refresh_token_hash = request
       .get('authorization')
       ?.replace('Bearer', '')
       .trim();
     return {
       ...payload,
-      refresh_token,
+      refresh_token_hash,
     };
   }
 }

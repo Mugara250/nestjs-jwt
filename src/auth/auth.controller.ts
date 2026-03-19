@@ -27,9 +27,14 @@ export class AuthController {
     return await this.authService.signinLocal(signinDTO);
   }
 
+  @UseGuards(AuthGuard('jwt-refresh'))
   @Post('refresh')
-  public async refreshToken() {
-    this.authService.refreshTokens();
+  public async refreshToken(@Req() request) {
+    const user = request.user;
+    return await this.authService.refreshTokens(
+      user.sub,
+      user.refresh_token_hash,
+    );
   }
 
   @UseGuards(AuthGuard('jwt'))
