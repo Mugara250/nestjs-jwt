@@ -5,6 +5,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Payload } from '../types';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
+import { User } from 'generated/prisma/browser';
 
 @Injectable()
 export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -25,6 +26,8 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
           id: sub,
         },
       });
+      const { password_hash, refresh_token_hash, ...safeUser }: User = user;
+      return safeUser;
     } catch (error) {
       if (
         error instanceof PrismaClientKnownRequestError &&
