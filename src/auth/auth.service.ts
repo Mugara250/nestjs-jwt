@@ -60,6 +60,21 @@ export class AuthService {
     return await this.getTokens(payload);
   }
 
+  public async logout(userId: number) {
+    await this.prisma.user.updateMany({
+      where: {
+        id: userId,
+        refresh_token_hash: {
+          not: null,
+        },
+      },
+      data: {
+        refresh_token_hash: null,
+      },
+    });
+  }
+
+  public async refreshTokens() {}
   async getTokens(
     payload: Payload,
   ): Promise<{ id: number; access_token: string; refresh_token: string }> {
@@ -95,6 +110,4 @@ export class AuthService {
       refresh_token,
     };
   }
-  public async logout() {}
-  public async refreshTokens() {}
 }
