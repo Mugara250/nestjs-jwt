@@ -10,9 +10,9 @@ import {
 import { AuthService } from './auth.service';
 import { SigninDTO } from './dto/signin.dto';
 import { SignupDTO } from './dto/signup.dto';
-import { AuthGuard } from '@nestjs/passport';
 import { User } from 'generated/prisma/browser';
 import { AccessTokenGuard, RefreshTokenGuard } from './common/guards';
+import { GetCurrentUser } from './common/decorators';
 
 @Controller('auth')
 export class AuthController {
@@ -30,8 +30,9 @@ export class AuthController {
 
   @UseGuards(RefreshTokenGuard)
   @Post('refresh')
-  public async refreshToken(@Req() request) {
-    const user = request.user;
+  public async refreshToken(
+    @GetCurrentUser() user,
+  ): Promise<{ id: number; access_token: string; refresh_token: string }> {
     return await this.authService.refreshTokens(
       user.sub,
       user.refresh_token_hash,
