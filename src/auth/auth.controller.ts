@@ -42,8 +42,7 @@ export class AuthController {
   @UseGuards(AccessTokenGuard)
   @HttpCode(HttpStatus.OK)
   @Post('logout')
-  public async logout(@Req() request): Promise<void> {
-    const user: User = request.user;
-    return await this.authService.logout(user.id);
+  public async logout(@GetCurrentUser('id') userId: number): Promise<void> {
+    return await this.authService.logout(userId);
   }
 }
