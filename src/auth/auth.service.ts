@@ -101,12 +101,12 @@ export class AuthService {
   ): Promise<{ id: number; access_token: string; refresh_token: string }> {
     const getAccessToken = async () =>
       await this.jwtService.signAsync(payload, {
-        secret: this.configService.get('JWT_SECRET'),
+        secret: this.configService.get('ACCESS_TOKEN_SECRET'),
         expiresIn: '15m',
       });
     const getRefreshToken = async () =>
       await this.jwtService.signAsync(payload, {
-        secret: this.configService.get('JWT_SECRET'),
+        secret: this.configService.get('REFRESH_TOKEN_SECRET'),
         expiresIn: '7d',
       });
     const [access_token, refresh_token] = await Promise.all([
